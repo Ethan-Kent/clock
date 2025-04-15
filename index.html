@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #1a1a1a;
+            margin: 0;
+            transition: background 0.3s ease;
+        }
+
+        .clock {
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: #2a2a2a;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            position: relative;
+            border: 10px solid #3a3a3a;
+            z-index: 1;
+            transition: background 0.3s ease;
+        }
+
+        .mark {
+            position: absolute;
+            width: 2px;
+            background: #fff;
+            left: 50%;
+            transform-origin: 50% 245px;
+            z-index: 2;
+            transition: background 0.3s ease;
+        }
+
+        .mark.main {
+            height: 25px;
+            background: #fff;
+        }
+
+        .mark.secondary {
+            height: 12px;
+            background: #666;
+        }
+
+        .number {
+            position: absolute;
+            color: #fff;
+            font-size: 26px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 2;
+            transition: color 0.3s ease;
+        }
+
+        .center {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            transition: background 0.3s ease;
+        }
+
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 4px;
+            transition: transform 0.3s cubic-bezier(0.4, 2.3, 0.6, 1);
+            z-index: 3;
+            transition: background 0.3s ease;
+        }
+
+        .hour {
+            width: 8px;
+            height: 25%;
+            background: #fff;
+        }
+
+        .minute {
+            width: 5px;
+            height: 35%;
+            background: #fff;
+        }
+
+        .second {
+            width: 2px;
+            height: 40%;
+            background: #ff4444;
+            transition: transform 0.2s cubic-bezier(0.4, 2.3, 0.6, 1);
+        }
+
+        .toggle-container {
+            position: fixed;
+            top: 0;
+            left: -230px;
+            width: 190px;
+            height: 100vh;
+            background: #2a2a2a;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .toggle-container.open {
+            left: 0;
+        }
+
+        body.light-mode .toggle-container {
+            background-color: #fff;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            width: auto;
+            height: 34px;
+            gap: 10px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: relative;
+            cursor: pointer;
+            width: 60px;
+            height: 34px;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        body.light-mode {
+            background: #f0f0f0;
+        }
+
+        body.light-mode .clock {
+            background: #fff;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            border-color: #e0e0e0;
+        }
+
+        body.light-mode .mark {
+            background: #333;
+        }
+
+        body.light-mode .mark.secondary {
+            background: #999;
+        }
+
+        body.light-mode .number {
+            color: #333;
+        }
+
+        body.light-mode .center {
+            background: #333;
+        }
+
+        body.light-mode .hand {
+            background: #333;
+        }
+
+        body.light-mode .second {
+            background: #ff4444;
+        }
+
+        .toggle span {
+            color: #ccc; 
+            transition: color 0.3s ease;
+            margin-right: -12px;
+        }
+
+        body.light-mode .toggle span {
+            color: #333; 
+        }
+
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+            z-index: 11;
+            transition: color 0.3s ease;
+        }
+
+        body.light-mode .menu-toggle {
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="menu-toggle" onclick="toggleMenu()">&middot;&middot;&middot;</div>
+    <div class="toggle-container" id="toggle-container">
+        <label class="toggle">
+            <span>切换主题</span>
+            <input type="checkbox" id="theme-toggle">
+            <span class="slider"></span>
+        </label>
+        <label class="toggle">
+            <span>全屏模式</span>
+            <input type="checkbox" id="fullscreen-toggle">
+            <span class="slider"></span>
+        </label>
+    </div>
+    <div class="clock">
+        <div class="center"></div>
+        <div class="hand hour"></div>
+        <div class="hand minute"></div>
+        <div class="hand second"></div>
+    </div>
+
+    <script>
+        function createClock() {
+            const clock = document.querySelector('.clock');
+            const size = 500;  
+            const radius = size / 2;  
+            const numberRadius = radius - 55;  
+
+            for(let i = 0; i < 60; i++) {
+                const angle = i * 6;  
+                const isHourMark = i % 5 === 0;
+
+                const mark = document.createElement('div');
+                mark.className = isHourMark ? 'mark main' : 'mark secondary';
+                mark.style.transform = `rotate(${angle}deg)`;
+                clock.appendChild(mark);
+
+                if(isHourMark) {
+                    const number = document.createElement('div');
+                    number.className = 'number';
+                    number.textContent = (i/5) || 12;  
+
+                    const radian = angle * Math.PI / 180;
+                    const x = radius + Math.sin(radian) * numberRadius;
+                    const y = radius - Math.cos(radian) * numberRadius;
+                    
+                    number.style.left = `${x}px`;
+                    number.style.top = `${y}px`;
+                    clock.appendChild(number);
+                }
+            }
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours() % 12;
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            
+            const hourDeg = hours * 30 + minutes * 0.5;
+            const minuteDeg = minutes * 6 + seconds * 0.1;
+            const secondDeg = seconds * 6;
+            
+            const secondHand = document.querySelector('.second');
+            if (seconds === 0) {
+                secondHand.style.transition = 'none';
+            } else {
+                secondHand.style.transition = 'transform 0.2s cubic-bezier(0.4, 2.3, 0.6, 1)';
+            }
+
+            document.querySelector('.hour').style.transform = 
+                `rotate(${hourDeg}deg)`;
+            document.querySelector('.minute').style.transform = 
+                `rotate(${minuteDeg}deg)`;
+            secondHand.style.transform = 
+                `rotate(${secondDeg}deg)`;
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+        }
+
+        function toggleFullscreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                requestFullScreen.call(docEl);
+            } else {
+                cancelFullScreen.call(doc);
+            }
+        }
+
+        function toggleMenu() {
+            const toggleContainer = document.getElementById('toggle-container');
+            toggleContainer.classList.toggle('open');
+        }
+
+        document.addEventListener('click', function(event) {
+            const toggleContainer = document.getElementById('toggle-container');
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (!toggleContainer.contains(event.target) && !menuToggle.contains(event.target)) {
+                toggleContainer.classList.remove('open');
+            }
+        });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', toggleTheme);
+
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
+        fullscreenToggle.addEventListener('change', toggleFullscreen);
+
+        createClock();
+        setInterval(updateTime, 1000);
+        updateTime(); 
+    </script>
+</body>
+</html>
+    
